@@ -1,0 +1,44 @@
+﻿@page "/counter"
+@using Microsoft.ML.Probabilistic.Models
+@using Microsoft.ML.Probabilistic.Algorithms
+
+<PageTitle>Counter</PageTitle>
+
+<h1>Counter</h1>
+
+<p role="status">Current count: @currentCount</p>
+
+<button class="btn btn-primary" @onclick="IncrementCount">Click me</button>
+
+<pre>
+    @ConsoleText
+</pre>
+
+@code {
+    private int currentCount = 0;
+
+    private void IncrementCount()
+    {
+        currentCount++;
+
+        var firstCoin = Variable.Bernoulli(0.5).Named("firstCoin");
+        var secondCoin = Variable.Bernoulli(0.5).Named("secondCoin");
+        var bothHeads = (firstCoin & secondCoin).Named("bothHeads");
+        var engine = new InferenceEngine();
+        if (engine.Algorithm is VariationalMessagePassing)
+        {
+            WriteLine("This example does not run with Variational Message Passing");
+            return;
+        }
+
+        WriteLine("Probability both coins are heads: " + engine.Infer(bothHeads));
+        bothHeads.ObservedValue = false;
+        WriteLine("Probability distribution over firstCoin: " + engine.Infer(firstCoin));
+    }
+
+    private string ConsoleText = "";
+    void WriteLine(string text)
+    {
+        ConsoleText += text + Environment.NewLine;
+    }
+}
